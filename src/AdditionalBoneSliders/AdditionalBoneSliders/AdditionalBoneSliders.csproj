@@ -59,12 +59,15 @@
     <Compile Include="Bone.cs" />
     <Compile Include="BoneInfo.cs" />
     <Compile Include="Events.cs" />
-    <Compile Include="Debug\Logger.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="PartController.cs" />
     <Compile Include="PartManager.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="_README.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

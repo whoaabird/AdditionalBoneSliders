@@ -10,7 +10,7 @@ There is yet no functionality that interacts with character Save, meaning that a
 Backup your character and bonemod.txt files(!).
 
 ## Holy sliders Batman!
-Yes, this mod will add a LOT of sliders by default. 672 with all sliders active. You can adjust which sliders are shown in the AdditionalBoneSliders.config.txt that should be placed in the Plugins directory.
+Yes, this mod will add a LOT of sliders by default. 672 with all sliders active. This takes time to load and can cause lag. You can adjust which sliders are shown in the AdditionalBoneSliders.config.txt that should be placed in the Plugins directory.
 
 ## Prerequisites
 This mod is made for use with IPA (https://github.com/Eusth/IPA) and the mod Additional Bone Modifiers

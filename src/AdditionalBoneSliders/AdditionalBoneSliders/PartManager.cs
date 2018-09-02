@@ -11,10 +11,15 @@ namespace AdditionalBoneSliders
 {
     public class PartManager
     {
+        private const float menuOffsetY = 70f;
+        private const float partHeight = 35f;
+        private const float defaultMenuHeight = 800f;
+        private const float menuItemHeight = 25.5f;
+
         private static readonly Debug.Logger _log =
             Debug.Logger.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private List<PartController> _parts { get; set; }
+        private Dictionary<string, PartController> _parts { get; set; }
         private Bone[] _bones { get; set; }
 
         public bool HasGUI { get; private set; } = false;
@@ -23,12 +28,14 @@ namespace AdditionalBoneSliders
 
         public PartManager()
         {
-            _parts = new List<PartController>();
+            _parts = new Dictionary<string, PartController>();
             _bones = null;
         }
 
         public void Load()
         {
+            var config = Config.Load();
+            
             var path = GetCurrentlyEditedBoneModFilePath();
 
             if (path == null)
@@ -46,7 +53,7 @@ namespace AdditionalBoneSliders
                 if (HasGUI)
                     Unload();
 
-                CreateGUI(bones);
+                CreateGUI(config, bones);
 
                 _log.Info("Loading complete.");
 
@@ -107,50 +114,36 @@ namespace AdditionalBoneSliders
             return GameObject.Find("Parts32") != null;
         }
 
-        private void CreateGUI(Bone[] bones)
+        private void CreateGUI(Config config, Bone[] bones)
         {
-            const int menuOffsetY = 70;
-            const int menuItemHeight = 35;
-
             var source = GameObject.Find("Parts32");
 
             _bones = bones;
 
-            var ordered = bones.OrderBy(b => b.Values.Name);
+            int count = 0;
 
             foreach (var bone in bones)
             {
-                if (bone.Values.Index == -1)
+                List<Config.SliderConfigInfo> settings;
+                if (config == null)
+                {
+                    settings = Config.DefaultSetting;
+                }
+                else if (!config.Settings.TryGetValue(bone.Values.Name, out settings))
+                {
                     continue;
+                }
 
-                var part = UnityEngine.Object.Instantiate(source);
-                part.name = bone.Values.Name;
-                part.transform.SetParent(source.transform.parent);
-                part.transform.position = source.transform.position;
-                part.transform.localPosition = source.transform.localPosition;
-                part.transform.localScale = source.transform.localScale;
+                foreach (var setting in settings)
+                {
+                    count++;
+                    var partController = CreatePartGUI(source, setting, bone);
 
-                part.transform.position -= new Vector3(0, menuOffsetY + menuItemHeight * _parts.Count, 0);
+                    _parts.Add(partController.Name, partController);
 
-                var text = part.GetChildComponent<Text>("SubItem");
+                    partController.BoneValueChanged += PartController_BoneValueChanged;
+                }
 
-                text.text = GetDisplayName(bone.Values.Name);
-
-                var inputField = part.GetChildComponent<InputField>("InputField");
-
-                var slider = part.GetChildComponent<Slider>("Slider");
-                slider.minValue = 0;
-                slider.maxValue = 100f;
-                slider.wholeNumbers = true;
-                slider.value = 1f;
-
-                var button = part.GetChildComponent<Button>("btn_def");
-
-                var partController = new PartController(part, inputField, slider, button, bone, 0.5f, 4f);
-
-                _parts.Add(partController);
-
-                partController.BoneValueChanged += PartController_BoneValueChanged;
             }
 
             var bodyShapeDControlPanel = source.transform.parent.gameObject;
@@ -159,16 +152,45 @@ namespace AdditionalBoneSliders
             var scrollRect = scrollView.GetComponent<ScrollRect>();
             var rectTransform = scrollRect.content;
 
-            rectTransform.SetHeight(5000f);
+            rectTransform.SetHeight(defaultMenuHeight + count * menuItemHeight);
+
+            _log.Info($"Created {count} sliders");
         }
 
-        private string GetDisplayName(string boneName)
+        private PartController CreatePartGUI(GameObject source, Config.SliderConfigInfo settings, Bone bone)
         {
-            string displayName = boneName
-                .Replace("cf_hit_", "Hit ")
-                .Replace("cf_J_", "J ")
-                .Replace("cf_N_", "N ")
-                .Replace("_", " ");
+            var part = UnityEngine.Object.Instantiate(source);
+            part.name = bone.Values.Name;
+            part.transform.SetParent(source.transform.parent);
+            part.transform.position = source.transform.position;
+            part.transform.localPosition = source.transform.localPosition;
+            part.transform.localScale = source.transform.localScale;
+
+            part.transform.position -= new Vector3(0, menuOffsetY + partHeight * _parts.Count, 0);
+
+            var displayName = GetDisplayName(bone.Values.Name, settings.EditedValue);
+
+            var text = part.GetChildComponent<Text>("SubItem");
+            text.text = displayName;
+
+            var inputField = part.GetChildComponent<InputField>("InputField");
+
+            var slider = part.GetChildComponent<Slider>("Slider");
+            slider.value = 1f;
+            slider.wholeNumbers = false;
+            slider.minValue = 0;
+            slider.maxValue = 100f;
+
+            var button = part.GetChildComponent<Button>("btn_def");
+
+            var partController = new PartController(displayName, part, inputField, slider, button, bone, settings.EditedValue, settings.MinValue, settings.MaxValue);
+
+            return partController;
+        }
+
+        private string GetDisplayName(string boneName, PartController.EditedValues value)
+        {
+            string displayName = $"{boneName.Replace("cf_hit_", "Hit ").Replace("cf_J_", "J ").Replace("cf_N_", "N ").Replace("_", " ")} ({value.ToString().ToUpper()})";
 
             return displayName;
         }
@@ -185,17 +207,15 @@ namespace AdditionalBoneSliders
                 string name = part.Bone.Values.Name;
                 string mirroredName = null;
 
-                if (name.EndsWith("_L"))
-                    mirroredName = name.Substring(0, name.Length - 2) + "_R";
-                else if (name.EndsWith("_R"))
-                    mirroredName = name.Substring(0, name.Length - 2) + "_L";
+                if (name.Contains(" L "))
+                    mirroredName = name.Replace(" L ", " R ");
+                else if (name.Contains(" R "))
+                    mirroredName = name.Replace(" R ", " L ");
 
                 if (mirroredName != null)
                 {
-                    var controller = _parts.Where(b => b.Bone.Values.Name == mirroredName).SingleOrDefault();
-
-                    if (controller != null)
-                        controller.Scale = part.Scale;
+                    if (_parts.TryGetValue(mirroredName, out var controller))
+                        controller.Value = part.Value;
                 }
             }
 
@@ -232,7 +252,7 @@ namespace AdditionalBoneSliders
             if (!HasGUI)
                 return;
 
-            foreach (var partController in _parts)
+            foreach (var partController in _parts.Values)
             {
                 UnityEngine.Object.Destroy(partController.Part);
 
@@ -241,7 +261,7 @@ namespace AdditionalBoneSliders
 
             // TODO: unload GUI menu height
 
-            _parts = new List<PartController>();
+            _parts = new Dictionary<string, PartController>();
             _bones = null;
 
             HasGUI = false;
@@ -251,7 +271,7 @@ namespace AdditionalBoneSliders
 
         public void ResetAll()
         {
-            foreach (var part in _parts)
+            foreach (var part in _parts.Values)
             {
                 part.Reset();
             }

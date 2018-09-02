@@ -10,11 +10,11 @@ namespace AdditionalBoneSliders
 {
     public class Plugin : IllusionPlugin.IPlugin
     {
-        private static readonly string _setLogPath = 
+        private static readonly string _setupLogPath = 
             (Debug.Logger.Path = $"{UserData.Path}..\\Plugins\\AdditionalBoneSliders.log");
 
         private static readonly GameObjectLogger _initLog = 
-            GameObjectLogger.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, _setLogPath);
+            GameObjectLogger.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, _setupLogPath);
 
         private static readonly GameObjectLogger _log = _initLog;
 
@@ -45,8 +45,6 @@ namespace AdditionalBoneSliders
 
         public void OnLevelWasInitialized(int level)
         {
-            _log.Info($"Scene: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name} was intialized");
-
             var sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
 
             if (sceneName == "CustomScene")
@@ -58,8 +56,6 @@ namespace AdditionalBoneSliders
 
         public void OnLevelWasLoaded(int level)
         {
-            _log.Info($"Scene: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name} was loaded");
-
             if (_partManager != null)
             {
                 _partManager.Unload();
@@ -84,7 +80,7 @@ namespace AdditionalBoneSliders
 
                     if (currentBoneModFile != null && currentBoneModFile != _editedBoneModeFilePath)
                     {
-                        // Character changed
+                        // Loaded BoneModFile changed changed
                         _partManager.Unload();
                     }
 

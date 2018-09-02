@@ -64,13 +64,17 @@
     <Compile Include="PartManager.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="_README.txt" />
+    <Content Include="AdditionalBoneSliders.config.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y C:\Projects\github\whoaabird\AdditionalBoneSliders\src\AdditionalBoneSliders\AdditionalBoneSliders\bin\Release\AdditionalBoneSliders.* E:\dl\HoneySelect\Plugins</PostBuildEvent>
+    <PostBuildEvent>copy /Y C:\Projects\github\whoaabird\AdditionalBoneSliders\src\AdditionalBoneSliders\AdditionalBoneSliders\bin\Release\AdditionalBoneSliders.dll E:\dl\HoneySelect\Plugins
+copy /Y C:\Projects\github\whoaabird\AdditionalBoneSliders\src\AdditionalBoneSliders\AdditionalBoneSliders\bin\Release\AdditionalBoneSliders.config.txt E:\dl\HoneySelect\Plugins</PostBuildEvent>
   </PropertyGroup>
 </Project>

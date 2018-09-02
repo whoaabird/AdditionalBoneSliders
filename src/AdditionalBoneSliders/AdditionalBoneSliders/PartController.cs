@@ -9,6 +9,14 @@ namespace AdditionalBoneSliders
 {
     public class PartController
     {
+        public enum EditedValues
+        {
+            X,
+            Y,
+            Z,
+            Scale
+        };
+
         private float _minValue;
         private float _maxValue;
 
@@ -22,6 +30,8 @@ namespace AdditionalBoneSliders
 
         private const string numberFormat = "F1";
 
+        public string Name { get; set; }
+
         public string InputText
         {
             set
@@ -33,26 +43,58 @@ namespace AdditionalBoneSliders
             }
         }
 
-        public float Scale
+        public EditedValues EditedValue { get; }
+
+        public float Value
         {
-            get { return Bone.Scale; }
+            get
+            {
+                switch (EditedValue)
+                {
+                    case EditedValues.X:
+                        return Bone.X;
+                    case EditedValues.Y:
+                        return Bone.Y;
+                    case EditedValues.Z:
+                        return Bone.Z;
+                    case EditedValues.Scale:
+                        return Bone.Scale;
+                    default:
+                        throw new NotImplementedException($"{EditedValue}");
+                }                
+            }
             set
             {
-                if (Bone != null && Bone.Scale != value)
+                switch (EditedValue)
                 {
-                    Bone.Scale = value;
-
-                    Bone.Values.Enabled =
-                        Bone.Values.Scale != Bone.DefaultValues.Scale;
-
-                    UpdateGUI();
-
-                    OnValueChanged();
+                    case EditedValues.X:
+                        if (Bone.X == value)
+                            return;
+                        Bone.X = value;
+                        break;
+                    case EditedValues.Y:
+                        if (Bone.Y == value)
+                            return;
+                        Bone.Y = value;
+                        break;
+                    case EditedValues.Z:
+                        if (Bone.Z == value)
+                            return;
+                        Bone.Z = value;
+                        break;
+                    case EditedValues.Scale:
+                        if (Bone.Scale == value)
+                            return;
+                        Bone.Scale = value;
+                        break;
                 }
+
+                UpdateGUI();
+                OnValueChanged();
             }
         }
 
-        public PartController(GameObject part, InputField inputField, Slider slider, Button button, Bone bone, float minValue, float maxValue)
+        public PartController(string name, GameObject part, InputField inputField, Slider slider, Button button, Bone bone, EditedValues editedValue, float minValue, float maxValue)
         {
             _minValue = minValue;
             _maxValue = maxValue;
@@ -60,21 +102,23 @@ namespace AdditionalBoneSliders
             if (_maxValue <= _minValue)
                 throw new ArgumentException("minValue has to larger than maxValue.");
 
+            Name = name;
             Bone = bone;
             Part = part;
             InputField = inputField;
             Slider = slider;
             Button = button;
-
-            UpdateGUI();
+            EditedValue = editedValue;
 
             AddListeners();
+
+            UpdateGUI();
         }
 
         private void AddListeners()
         {
             InputField.onEndEdit.AddListener((x) => InputText = x);
-            Slider.onValueChanged.AddListener((x) => Scale = _minValue + Slider.normalizedValue * (_maxValue - _minValue));
+            Slider.onValueChanged.AddListener((x) => Value = _minValue + Slider.normalizedValue * (_maxValue - _minValue));
             Button.onClick.AddListener(() => Reset());
         }
 
@@ -89,11 +133,8 @@ namespace AdditionalBoneSliders
         {
             RemoveListeners();
 
-            if (InputField != null)
-                InputField.text = Bone.Scale.ToString(numberFormat);
-
-            if (Slider != null)
-                Slider.normalizedValue = (Bone.Scale - _minValue) / (_maxValue - _minValue);
+            InputField.text = Value.ToString(numberFormat);
+            Slider.normalizedValue = (Value - _minValue) / (_maxValue - _minValue);
 
             AddListeners();
         }

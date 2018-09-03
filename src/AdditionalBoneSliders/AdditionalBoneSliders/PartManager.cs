@@ -15,7 +15,7 @@ namespace AdditionalBoneSliders
         private const float menuOffsetY = 70f;
         private const float partHeight = 35f;
         private const float defaultMenuHeight = 800f;
-        private const float menuItemHeight = 26f;
+        private const float menuItemHeight = 27f;
 
         private static readonly Debug.Logger _log =
             Debug.Logger.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -25,7 +25,7 @@ namespace AdditionalBoneSliders
 
         public bool HasGUI { get; private set; } = false;
 
-        private bool mirrorEdit { get; } = true;
+        private bool MirrorEdit { get; } = true;
 
         private PartManager()
         {
@@ -53,8 +53,6 @@ namespace AdditionalBoneSliders
                     Unload();
 
                 StartCoroutine(CreateGUI(config, bones));
-
-                _log.Info("Loading complete.");
 
                 HasGUI = true;
             }
@@ -138,7 +136,6 @@ namespace AdditionalBoneSliders
                     _parts.Add(partController.Name, partController);
 
                     partController.BoneValueChanged += PartController_BoneValueChanged;
-
                 }
 
                 yield return new WaitForEndOfFrame();
@@ -179,6 +176,7 @@ namespace AdditionalBoneSliders
 
             var text = part.GetChildComponent<Text>("SubItem");
             text.text = displayName;
+            text.color = GetDisplayColor(bone);
 
             var inputField = part.GetChildComponent<InputField>("InputField");
 
@@ -202,6 +200,26 @@ namespace AdditionalBoneSliders
             return displayName;
         }
 
+        private Color GetDisplayColor(Bone bone)
+        {
+            var color = Color.white;
+
+            string name = bone.Values.Name;
+
+            if (name.EndsWith("_L"))
+                color = Color.Lerp(color, Color.red, 0.5f);
+            else if (name.EndsWith("_R"))
+                color = Color.Lerp(color, Color.green, 0.5f);
+
+            if (name.Contains("_s_") || name.EndsWith("_s"))
+                color = Color.Lerp(color, Color.grey, 0.5f);
+
+            if (bone.Values.Index == -1)
+                color = Color.Lerp(color, Color.blue, 0.5f);
+
+            return color;
+        }
+
         private void PartController_BoneValueChanged(object sender, BoneValueChangedEvent e)
         {
             OnBoneValueChanged(sender as PartController);
@@ -209,9 +227,9 @@ namespace AdditionalBoneSliders
 
         private void OnBoneValueChanged(PartController part)
         {
-            if (mirrorEdit && part != null)
+            if (MirrorEdit && part != null)
             {
-                string name = part.Bone.Values.Name;
+                string name = part.Name;
                 string mirroredName = null;
 
                 if (name.Contains(" L "))

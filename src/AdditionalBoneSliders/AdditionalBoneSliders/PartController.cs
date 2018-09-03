@@ -30,7 +30,7 @@ namespace AdditionalBoneSliders
 
         private const string numberFormat = "F1";
 
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         public string InputText
         {
@@ -102,8 +102,7 @@ namespace AdditionalBoneSliders
             if (_maxValue <= _minValue)
                 throw new ArgumentException("minValue has to larger than maxValue.");
 
-            Name = name;
-            Bone = bone;
+            Name = name;            Bone = bone;
             Part = part;
             InputField = inputField;
             Slider = slider;

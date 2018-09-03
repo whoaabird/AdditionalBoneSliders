@@ -9,7 +9,7 @@ namespace AdditionalBoneSliders
     internal class Config
     {
         private const float defaultMinValue = 0.5f;
-        private const float defaultMaxValue = 2.5f;
+        private const float defaultMaxValue = 2.0f;
 
         public static readonly List<SliderConfigInfo> DefaultSetting = new List<SliderConfigInfo>()
         {

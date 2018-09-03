@@ -1,5 +1,6 @@
 ﻿using AdditionalBoneSliders.Util;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,27 +10,25 @@ using UnityEngine.UI;
 
 namespace AdditionalBoneSliders
 {
-    public class PartManager
+    public class PartManager : MonoBehaviour
     {
         private const float menuOffsetY = 70f;
         private const float partHeight = 35f;
         private const float defaultMenuHeight = 800f;
-        private const float menuItemHeight = 25.5f;
+        private const float menuItemHeight = 26f;
 
         private static readonly Debug.Logger _log =
             Debug.Logger.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private Dictionary<string, PartController> _parts { get; set; }
-        private Bone[] _bones { get; set; }
+        private Dictionary<string, PartController> _parts { get; set; } = new Dictionary<string, PartController>();
+        private Bone[] _bones { get; set; } = null;
 
         public bool HasGUI { get; private set; } = false;
 
         private bool mirrorEdit { get; } = true;
 
-        public PartManager()
+        private PartManager()
         {
-            _parts = new Dictionary<string, PartController>();
-            _bones = null;
         }
 
         public void Load()
@@ -53,7 +52,7 @@ namespace AdditionalBoneSliders
                 if (HasGUI)
                     Unload();
 
-                CreateGUI(config, bones);
+                StartCoroutine(CreateGUI(config, bones));
 
                 _log.Info("Loading complete.");
 
@@ -114,13 +113,11 @@ namespace AdditionalBoneSliders
             return GameObject.Find("Parts32") != null;
         }
 
-        private void CreateGUI(Config config, Bone[] bones)
+        private IEnumerator CreateGUI(Config config, Bone[] bones)
         {
             var source = GameObject.Find("Parts32");
 
             _bones = bones;
-
-            int count = 0;
 
             foreach (var bone in bones)
             {
@@ -136,25 +133,35 @@ namespace AdditionalBoneSliders
 
                 foreach (var setting in settings)
                 {
-                    count++;
                     var partController = CreatePartGUI(source, setting, bone);
 
                     _parts.Add(partController.Name, partController);
 
                     partController.BoneValueChanged += PartController_BoneValueChanged;
+
                 }
 
+                yield return new WaitForEndOfFrame();
             }
 
+            _log.Info($"Created {_parts.Count} sliders");
+
+            yield return StartCoroutine(SetMenuHeight(source));
+
+            yield return null;
+        }
+
+        private IEnumerator SetMenuHeight(GameObject source)
+        {
             var bodyShapeDControlPanel = source.transform.parent.gameObject;
 
             var scrollView = bodyShapeDControlPanel.transform.parent.gameObject;
             var scrollRect = scrollView.GetComponent<ScrollRect>();
             var rectTransform = scrollRect.content;
 
-            rectTransform.SetHeight(defaultMenuHeight + count * menuItemHeight);
+            rectTransform.SetHeight(defaultMenuHeight + _parts.Count * menuItemHeight);
 
-            _log.Info($"Created {count} sliders");
+            yield return null;
         }
 
         private PartController CreatePartGUI(GameObject source, Config.SliderConfigInfo settings, Bone bone)

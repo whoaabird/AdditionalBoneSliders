@@ -49,8 +49,8 @@ namespace AdditionalBoneSliders
 
             if (sceneName == "CustomScene")
             {
-                _partManager = new PartManager();
-                _log.Info("Created new PartManager");
+                var customMainMenu = GameObject.Find("CustomMainMenu");
+                _partManager = customMainMenu.AddComponent<PartManager>();
             }
         }
 

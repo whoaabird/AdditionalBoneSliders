@@ -75,6 +75,6 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /Y C:\Projects\github\whoaabird\AdditionalBoneSliders\src\AdditionalBoneSliders\AdditionalBoneSliders\bin\Release\AdditionalBoneSliders.dll E:\dl\HoneySelect\Plugins
-copy /Y C:\Projects\github\whoaabird\AdditionalBoneSliders\src\AdditionalBoneSliders\AdditionalBoneSliders\bin\Release\AdditionalBoneSliders.config.txt E:\dl\HoneySelect\Plugins</PostBuildEvent>
+@echo copy /Y C:\Projects\github\whoaabird\AdditionalBoneSliders\src\AdditionalBoneSliders\AdditionalBoneSliders\bin\Release\AdditionalBoneSliders.config.txt E:\dl\HoneySelect\Plugins</PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -211,11 +211,10 @@ namespace AdditionalBoneSliders
             else if (name.EndsWith("_R"))
                 color = Color.Lerp(color, Color.green, 0.5f);
 
-            if (name.Contains("_s_") || name.EndsWith("_s"))
-                color = Color.Lerp(color, Color.grey, 0.5f);
-
             if (bone.Values.Index == -1)
                 color = Color.Lerp(color, Color.blue, 0.5f);
+            else if (name.Contains("_s_") || name.EndsWith("_s"))
+                color = Color.Lerp(color, Color.grey, 0.5f);
 
             return color;
         }

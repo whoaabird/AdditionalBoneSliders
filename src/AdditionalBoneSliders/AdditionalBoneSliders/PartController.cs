@@ -118,7 +118,7 @@ namespace AdditionalBoneSliders
         {
             InputField.onEndEdit.AddListener((x) => InputText = x);
             Slider.onValueChanged.AddListener((x) => Value = _minValue + Slider.normalizedValue * (_maxValue - _minValue));
-            Button.onClick.AddListener(() => Reset());
+            Button.onClick.AddListener(() => ResetEditedValue());
         }
 
         private void RemoveListeners()
@@ -136,6 +136,27 @@ namespace AdditionalBoneSliders
             Slider.normalizedValue = (Value - _minValue) / (_maxValue - _minValue);
 
             AddListeners();
+        }
+
+        public void ResetEditedValue()
+        {
+            switch (EditedValue)
+            {
+                case EditedValues.Scale:
+                    Bone.Scale = Bone.DefaultValues.Scale;
+                    break;
+                case EditedValues.X:
+                    Bone.X = Bone.DefaultValues.X;
+                    break;
+                case EditedValues.Y:
+                    Bone.Y = Bone.DefaultValues.Y;
+                    break;
+                case EditedValues.Z:
+                    Bone.Z = Bone.DefaultValues.Z;
+                    break;
+            }
+            OnValueChanged();
+            UpdateGUI();
         }
 
         public void Reset()

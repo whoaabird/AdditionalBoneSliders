@@ -97,20 +97,13 @@ namespace AdditionalBoneSliders
                     }
                 }
 
-                if (Input.GetKeyDown(KeyCode.LeftControl))
+                if (Input.GetKeyDown(KeyCode.LeftControl) &&
+                    Input.GetKeyDown(KeyCode.LeftShift) &&
+                    Input.GetKeyDown(KeyCode.M))
                 {
-                    // log selected GameObject once
-                    var gameObject = UnityEngine.EventSystems.EventSystem.current.currentSelectedGameObject;
-
-                    gameObject.DoOnce((x) =>
-                    {
-                        _log.Info("Children:");
-                        _log.GameObjectChildren(x);
-                        _log.Info("Hierarchy:");
-                        _log.GameObjectHierarchy(x);
-                    });
+                    if (_partManager != null)
+                        _partManager.MirrorEdit = !_partManager.MirrorEdit;
                 }
-
             }
             catch (Exception e)
             {

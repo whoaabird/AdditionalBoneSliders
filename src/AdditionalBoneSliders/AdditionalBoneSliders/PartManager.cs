@@ -25,7 +25,7 @@ namespace AdditionalBoneSliders
 
         public bool HasGUI { get; private set; } = false;
 
-        private bool MirrorEdit { get; } = true;
+        public bool MirrorEdit { get; set; } = false;
 
         private PartManager()
         {
